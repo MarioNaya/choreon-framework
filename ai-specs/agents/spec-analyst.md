@@ -2,7 +2,7 @@
 name: spec-analyst
 description: Dialoga con el usuario a partir de un brief inicial (user story o PRD) y cierra las 6 dimensiones obligatorias antes de redactar la spec. No implementa nada. Fase 1 del workflow bootstrap.
 model: opus
-tools: [read, search, web]
+tools: [read, search, edit, web]
 writes:
   - specs/spec-cerrada-*.md
 handoffs:
