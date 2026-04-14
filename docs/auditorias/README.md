@@ -16,6 +16,7 @@ No sustituye a la documentación: es input para futuras decisiones de diseño, r
 | Versión | Fecha | Nota | Archivo |
 |---|---|---|---|
 | v0.4 (post-docs) | 2026-04-15 | 7.8 / 10 | [`AUDITORIA_V0.4.md`](AUDITORIA_V0.4.md) |
+| v0.5 (primer uso real — bootstrap) | 2026-04-15 | 8.5 / 10 | [`AUDITORIA_V0.5.md`](AUDITORIA_V0.5.md) |
 
 ## Cuándo auditar
 
