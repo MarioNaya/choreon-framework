@@ -1,0 +1,74 @@
+# CI nightly — ejecución diaria completa. También disparable manualmente.
+# Jobs secuenciales: si falla el primer entorno, el segundo se ejecuta igualmente (if: always()) para cobertura total.
+
+name: CI Nightly
+
+on:
+  schedule:
+    - cron: "0 0 * * *"   # Diario a las 00:00 UTC. Ajusta según zona.
+  workflow_dispatch:
+
+jobs:
+  nightly-env1:
+    name: "Nightly @ [[ENV1]]"
+    runs-on: [[RUNNER_GROUP]]
+
+    env:
+      ENVIRONMENT: [[ENV1]]
+      # API_URL: ${{ secrets.API_URL_ENV1 }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup runtime
+        uses: [[SETUP_ACTION]]
+        with:
+          [[RUNTIME_VERSION_KEY]]: [[RUNTIME_VERSION_VALUE]]
+
+      - name: Install dependencies
+        run: [[INSTALL_COMMAND]]
+
+      - name: Run full suite
+        run: [[TEST_COMMAND_ALL]]
+
+      - name: Collect artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-[[ENV1]]-${{ github.run_id }}
+          path: [[ARTIFACT_PATH]]
+          retention-days: 30
+
+  nightly-env2:
+    name: "Nightly @ [[ENV2]]"
+    runs-on: [[RUNNER_GROUP]]
+    needs: nightly-env1
+    if: always()   # No cancelar aunque env1 falle
+
+    env:
+      ENVIRONMENT: [[ENV2]]
+      # API_URL: ${{ secrets.API_URL_ENV2 }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup runtime
+        uses: [[SETUP_ACTION]]
+        with:
+          [[RUNTIME_VERSION_KEY]]: [[RUNTIME_VERSION_VALUE]]
+
+      - name: Install dependencies
+        run: [[INSTALL_COMMAND]]
+
+      - name: Run full suite
+        run: [[TEST_COMMAND_ALL]]
+
+      - name: Collect artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-[[ENV2]]-${{ github.run_id }}
+          path: [[ARTIFACT_PATH]]
+          retention-days: 30

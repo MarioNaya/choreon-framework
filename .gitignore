@@ -1,0 +1,32 @@
+# Backups automáticos del sistema de memoria — no versionar
+docs/sesion/CONTEXTO.bak.md
+docs/sesion/DECISIONES.bak.md
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs y temporales
+*.log
+logs/
+tmp/
+.tmp/
+
+# Python cache (scripts y MCP servers)
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Dependencias (descomentar según stack tras /bootstrap)
+# node_modules/
+# target/
+# vendor/
+# .venv/

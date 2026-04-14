@@ -1,0 +1,22 @@
+{
+  "LENGUAJE": "Python 3.12+",
+  "BACKEND_GLOB": "src/**/*.py",
+  "FRONTEND_GLOB": "",
+  "TEST_GLOB": "tests/**/*.py",
+  "PROJECT_SRC_GLOB": "src/**/*.py",
+  "PROJECT_TEST_GLOB": "tests/**/*.py",
+  "INSTALL_COMMAND": "pip install -r requirements.txt",
+  "TEST_COMMAND_UNIT": "pytest tests/unit",
+  "TEST_COMMAND_INTEGRATION": "pytest tests/integration",
+  "TEST_COMMAND_E2E": "pytest tests/e2e",
+  "TEST_COMMAND_ALL": "pytest",
+  "RUNNER_GROUP": "ubuntu-latest",
+  "SETUP_ACTION": "actions/setup-python@v5",
+  "RUNTIME_VERSION_KEY": "python-version",
+  "RUNTIME_VERSION_VALUE": "3.12",
+  "NODE_VERSION": "3.12",
+  "LANG_VERSION": "3.12",
+  "ARTIFACT_PATH": "reports/",
+  "ENV1": "dev",
+  "ENV2": "staging"
+}

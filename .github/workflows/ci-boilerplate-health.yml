@@ -1,0 +1,114 @@
+# Health-check del propio boilerplate.
+# Se ejecuta en cada push y PR contra main: asegura que los invariantes del sistema no se rompen.
+# Cubre: sync idempotente, validadores verdes, 0 residuos del origen, golden-path sin placeholders, smoke test MCP.
+
+name: Boilerplate Health
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: "1. sync-agents.py ejecuta sin error"
+        run: |
+          python scripts/sync-agents.py
+          echo "✓ sync v0.2 ejecutado"
+
+      - name: "2. Idempotencia (segundo run = mismos hashes)"
+        run: |
+          find .claude .github CLAUDE.md -type f -name '*.md' | sort | xargs sha256sum > /tmp/hashes1.txt
+          python scripts/sync-agents.py > /dev/null
+          find .claude .github CLAUDE.md -type f -name '*.md' | sort | xargs sha256sum > /tmp/hashes2.txt
+          if diff -q /tmp/hashes1.txt /tmp/hashes2.txt; then
+            echo "✓ Idempotente"
+          else
+            echo "✗ sync no es idempotente"
+            diff /tmp/hashes1.txt /tmp/hashes2.txt
+            exit 1
+          fi
+
+      - name: "3. Validador CONTEXTO (plantilla raíz)"
+        run: bash scripts/validar-contexto.sh docs/sesion/CONTEXTO.md
+
+      - name: "4. Validador DECISIONES (plantilla raíz)"
+        run: bash scripts/validar-decisiones.sh docs/sesion/DECISIONES.md
+
+      - name: "5. Validador CONTEXTO (golden-path)"
+        run: bash scripts/validar-contexto.sh examples/golden-path/docs/sesion/CONTEXTO.md
+
+      - name: "6. Validador DECISIONES (golden-path)"
+        run: bash scripts/validar-decisiones.sh examples/golden-path/docs/sesion/DECISIONES.md
+
+      - name: "7. Golden-path sin placeholders"
+        run: |
+          HITS=$(grep -rc '\[\[' examples/golden-path/ | grep -v ':0$' || true)
+          if [[ -n "$HITS" ]]; then
+            echo "✗ Placeholders detectados en golden-path:"
+            echo "$HITS"
+            exit 1
+          fi
+          echo "✓ 0 placeholders"
+
+      - name: "8. Sin residuos del origen QA (DAM/ECI/Cypress/Xray)"
+        run: |
+          # Este paso contiene las keywords por necesidad; se excluye a sí mismo.
+          if grep -rwiE 'dam|eci|cypress|cucumber|xray|pd00000568|primevue|retouch|aida' \
+               --include='*.md' --include='*.yml' --include='*.py' --include='*.sh' \
+               --exclude='ci-boilerplate-health.yml' \
+               . 2>/dev/null; then
+            echo "✗ Residuos del origen detectados"
+            exit 1
+          fi
+          echo "✓ 0 residuos"
+
+      - name: "9. Smoke test memory-mcp (sin instalar mcp)"
+        run: python scripts/mcp/memory-server/server.py --test
+
+      - name: "10. Smoke test fs-guard-mcp (matriz de permisos)"
+        run: python scripts/mcp/fs-guard-server/server.py --test
+
+      - name: "11. Template packs se listan correctamente"
+        run: |
+          OUTPUT=$(python scripts/init-project.py --list-templates)
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -q "web-typescript" || { echo "✗ falta web-typescript"; exit 1; }
+          echo "$OUTPUT" | grep -q "python-api" || { echo "✗ falta python-api"; exit 1; }
+          echo "$OUTPUT" | grep -q "go-service" || { echo "✗ falta go-service"; exit 1; }
+          echo "✓ 3 packs disponibles"
+
+      - name: "12. Template pack aplicable (copia temporal, web-typescript)"
+        run: |
+          TMPDIR=$(mktemp -d)
+          cp -r ai-specs docs .github .claude specs scripts templates AGENTS.md README.md INIT.md CLAUDE.md "$TMPDIR/"
+          cd "$TMPDIR"
+          python scripts/init-project.py --template=web-typescript --non-interactive > /tmp/init.log 2>&1
+          grep -q "pnpm test" .github/workflows/ci-manual.yml || { echo "✗ pack no aplicó al workflow"; exit 1; }
+          test -f .github/instructions/backend.instructions.md
+          grep -q "TypeScript" .github/instructions/backend.instructions.md
+          echo "✓ pack web-typescript aplicado correctamente"
+
+      - name: "13. Estructura esperada"
+        run: |
+          test -f AGENTS.md && echo "✓ AGENTS.md"
+          test -f CLAUDE.md && echo "✓ CLAUDE.md"
+          test -f README.md && echo "✓ README.md"
+          test -f INIT.md && echo "✓ INIT.md"
+          test $(ls ai-specs/agents/*.md | wc -l) -eq 9 && echo "✓ 9 agentes canónicos"
+          test $(ls ai-specs/prompts/*.md | wc -l) -eq 10 && echo "✓ 10 prompts canónicos"
+          test $(ls .claude/agents/*.md | wc -l) -eq 9 && echo "✓ 9 agentes Claude"
+          test $(ls .github/agents/*.agent.md | wc -l) -eq 9 && echo "✓ 9 agentes Copilot"

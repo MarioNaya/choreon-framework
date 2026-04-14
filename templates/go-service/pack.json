@@ -1,0 +1,22 @@
+{
+  "LENGUAJE": "Go 1.22+",
+  "BACKEND_GLOB": "**/*.go",
+  "FRONTEND_GLOB": "",
+  "TEST_GLOB": "**/*_test.go",
+  "PROJECT_SRC_GLOB": "**/*.go",
+  "PROJECT_TEST_GLOB": "**/*_test.go",
+  "INSTALL_COMMAND": "go mod download",
+  "TEST_COMMAND_UNIT": "go test ./... -short",
+  "TEST_COMMAND_INTEGRATION": "go test -tags=integration ./...",
+  "TEST_COMMAND_E2E": "go test -tags=e2e ./tests/e2e/...",
+  "TEST_COMMAND_ALL": "go test ./...",
+  "RUNNER_GROUP": "ubuntu-latest",
+  "SETUP_ACTION": "actions/setup-go@v5",
+  "RUNTIME_VERSION_KEY": "go-version",
+  "RUNTIME_VERSION_VALUE": "1.22",
+  "NODE_VERSION": "1.22",
+  "LANG_VERSION": "1.22",
+  "ARTIFACT_PATH": "reports/",
+  "ENV1": "dev",
+  "ENV2": "staging"
+}

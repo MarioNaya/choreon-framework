@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# pre-commit hook — valida invariantes de memoria antes de permitir commits.
+# Activación: git config core.hooksPath .githooks
+# Desactivación temporal: git commit --no-verify (documentar por qué en el mensaje)
+
+set -euo pipefail
+
+# Si hay git, usar su root; si no, usar el directorio del hook (útil para smoke tests)
+if ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"; then
+  :
+else
+  ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+fi
+EXIT=0
+
+# 1. Validar CONTEXTO si está tocado por este commit o existe con contenido real
+if [[ -f "$ROOT/docs/sesion/CONTEXTO.md" ]]; then
+  if ! bash "$ROOT/scripts/validar-contexto.sh" "$ROOT/docs/sesion/CONTEXTO.md" > /tmp/pc-ctx.log 2>&1; then
+    echo "✗ validar-contexto.sh falló:"
+    cat /tmp/pc-ctx.log
+    EXIT=1
+  fi
+fi
+
+# 2. Validar DECISIONES
+if [[ -f "$ROOT/docs/sesion/DECISIONES.md" ]]; then
+  if ! bash "$ROOT/scripts/validar-decisiones.sh" "$ROOT/docs/sesion/DECISIONES.md" > /tmp/pc-dec.log 2>&1; then
+    echo "✗ validar-decisiones.sh falló:"
+    cat /tmp/pc-dec.log
+    EXIT=1
+  fi
+fi
+
+# 3. Si el staged incluye ai-specs/, sugerir (no forzar) re-sync
+if git rev-parse --git-dir >/dev/null 2>&1; then
+  if git diff --cached --name-only 2>/dev/null | grep -q "^ai-specs/"; then
+    echo "ℹ ai-specs/ modificado. Recuerda ejecutar: bash scripts/sync-agents.sh"
+  fi
+fi
+
+if [[ $EXIT -ne 0 ]]; then
+  echo ""
+  echo "Commit bloqueado. Arregla los problemas o usa --no-verify justificándolo."
+  exit $EXIT
+fi
+
+exit 0

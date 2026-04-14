@@ -1,0 +1,73 @@
+# CI manual — ejecución bajo demanda con matriz entorno × suite.
+# Rellena los [[PLACEHOLDERS]] tras /bootstrap.
+# Secrets se configuran en Settings → Secrets and variables → Actions.
+
+name: CI Manual
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Entorno objetivo"
+        required: true
+        default: dev
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      suite:
+        description: "Suite de pruebas"
+        required: true
+        default: unit
+        type: choice
+        options:
+          - unit
+          - integration
+          - e2e
+          - all
+
+jobs:
+  test:
+    name: "${{ inputs.suite }} @ ${{ inputs.environment }}"
+    runs-on: [[RUNNER_GROUP]]
+
+    env:
+      ENVIRONMENT: ${{ inputs.environment }}
+      # Ejemplo:
+      # API_URL: ${{ secrets.API_URL_DEV }}
+      # Defínelos según el entorno seleccionado.
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup runtime
+        # Sustituye por la acción correspondiente al stack:
+        # - setup-node@v4 con node-version
+        # - setup-python@v5 con python-version
+        # - setup-go@v5 con go-version
+        # etc.
+        uses: [[SETUP_ACTION]]
+        with:
+          [[RUNTIME_VERSION_KEY]]: [[RUNTIME_VERSION_VALUE]]
+
+      - name: Install dependencies
+        run: [[INSTALL_COMMAND]]
+
+      - name: Run suite
+        run: |
+          case "${{ inputs.suite }}" in
+            unit) [[TEST_COMMAND_UNIT]] ;;
+            integration) [[TEST_COMMAND_INTEGRATION]] ;;
+            e2e) [[TEST_COMMAND_E2E]] ;;
+            all) [[TEST_COMMAND_ALL]] ;;
+          esac
+
+      - name: Collect artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-${{ inputs.suite }}-${{ inputs.environment }}
+          path: [[ARTIFACT_PATH]]
+          retention-days: 14

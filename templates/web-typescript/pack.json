@@ -1,0 +1,22 @@
+{
+  "LENGUAJE": "TypeScript 5.4+",
+  "BACKEND_GLOB": "src/**/*.ts",
+  "FRONTEND_GLOB": "src/components/**/*.tsx",
+  "TEST_GLOB": "**/*.test.ts",
+  "PROJECT_SRC_GLOB": "src/**/*.ts",
+  "PROJECT_TEST_GLOB": "tests/**/*.test.ts",
+  "INSTALL_COMMAND": "pnpm install",
+  "TEST_COMMAND_UNIT": "pnpm test",
+  "TEST_COMMAND_INTEGRATION": "pnpm test:integration",
+  "TEST_COMMAND_E2E": "pnpm test:e2e",
+  "TEST_COMMAND_ALL": "pnpm test:all",
+  "RUNNER_GROUP": "ubuntu-latest",
+  "SETUP_ACTION": "actions/setup-node@v4",
+  "RUNTIME_VERSION_KEY": "node-version",
+  "RUNTIME_VERSION_VALUE": "20",
+  "NODE_VERSION": "20",
+  "LANG_VERSION": "20",
+  "ARTIFACT_PATH": "reports/",
+  "ENV1": "dev",
+  "ENV2": "staging"
+}

@@ -1,0 +1,31 @@
+{
+  "_comentario": "Ejemplo de configuración MCP para Claude Code. Copia a .claude/mcp.json y ajusta los comandos Python si tu entorno lo requiere.",
+
+  "mcpServers": {
+    "memory": {
+      "_descripcion": "Memoria queryable de CONTEXTO.md y DECISIONES.md. Reduce token load.",
+      "command": "python",
+      "args": [
+        "scripts/mcp/memory-server/server.py"
+      ]
+    },
+
+    "fs-guard-feature-developer": {
+      "_descripcion": "Ejemplo de fs-guard por-agente para feature-developer. Crea entradas similares para cada agente que quieras proteger.",
+      "command": "python",
+      "args": [
+        "scripts/mcp/fs-guard-server/server.py",
+        "--agent", "feature-developer"
+      ]
+    },
+
+    "fs-guard-context-manager": {
+      "_descripcion": "fs-guard para context-manager — único con W sobre CONTEXTO/DECISIONES (y sus .bak).",
+      "command": "python",
+      "args": [
+        "scripts/mcp/fs-guard-server/server.py",
+        "--agent", "context-manager"
+      ]
+    }
+  }
+}
