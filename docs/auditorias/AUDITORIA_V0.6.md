@@ -1,26 +1,38 @@
-# Auditoría v0.6 — ciclo de desarrollo (parcial)
+# Auditoría v0.6 — ciclo de desarrollo (COMPLETA)
 
 **Fecha:** 2026-04-15
-**Versión auditada:** v0.4 + hotfix `spec-analyst` (`f41f780`). Ciclo de desarrollo sobre proyecto `gasto-cli` (brief → E01 tracer bullet → cierre sesión S1).
+**Versión auditada:** v0.4 + hotfix `spec-analyst` (`f41f780`). Ciclo de desarrollo completo sobre proyecto `gasto-cli` (brief → E01 tracer bullet → verificación toolchain Go → review con iteración → aprobación).
 **Auditor:** sesión colaborativa con Claude Code.
-**Contexto:** **segunda iteración empírica del framework**, complementa v0.5 (bootstrap). Cubre `feature-analyst` + `feature-developer` + `context-manager` en modo cierre. **Pendiente:** verificación real del código (requiere Go instalado) + `code-reviewer`.
+**Contexto:** **segunda iteración empírica del framework**, complementa v0.5 (bootstrap). Cubre el **ciclo completo end-to-end**: `feature-analyst` + `feature-developer` + `code-reviewer` (dos vueltas con iteración de fix) + `context-manager` (dos cierres de sesión).
 
 ---
 
-## Nota global (parcial): **8.3 / 10**
+## Nota global final: **8.7 / 10**
 
-Ligera baja respecto a v0.5 (8.5). El ciclo de desarrollo funcionó en general, pero expuso **más gaps de framework de lo esperado**:
+Subida de **+0.4 sobre la parcial** (8.3) y **+0.2 sobre v0.5** (8.5).
 
-- Agentes excelentes en comportamiento (razonan, elevan tensiones, no tragan silenciosamente).
-- **Framework con varios agujeros reales** que solo se ven al ejecutar: matriz incompleta, numeración sin pinear, Gate DoD con zona gris.
+Razones para subir a 8.7:
 
-La nota puede subir a 8.7+ cuando el `code-reviewer` cierre el Gate DoD, si lo hace de forma útil.
+- **El ciclo completo funciona end-to-end.** Reviewer detecta gap real → developer itera → reviewer aprueba. Sin fricción técnica.
+- **La iteración es económicamente viable:** el re-review costó 71% menos tokens y 81% menos tiempo que el primero (16.9k vs 58.8k; 1m 3s vs 5m 31s). Prueba que el modelo reviewer → developer → reviewer escala.
+- **El reviewer atrapa lo que el developer pasa por alto.** H1 (substring matching en `main.go`) iba a quedar como deuda silenciosa en producción si el reviewer no lo detectara.
+- **Gobierno respetado en toda la cascada.** Reviewer no tocó código, escribió solo en `COBERTURA.md`. Developer aplicó los 4 fixes sin tocar la matriz (H3 escalado correctamente).
+- **Context-manager coherente:** backups, edición in-place, warnings proactivos, progresión de sesión correcta la segunda vuelta (S2 → S3).
+
+Razones para NO subir a 9:
+
+- 6+ hallazgos P0/P1 acumulados entre v0.4, v0.5 y v0.6 **sin resolver**.
+- Coste del ciclo sigue alto: ~360k tokens totales (S1 + S2 completas); ~265k en ciclo recurrente por feature sin contar bootstrap.
+- Numeración de sesión S0 → S2 (saltándose S1 en primer cierre) sigue sin fix de contrato.
+- Developer sigue introduciendo decisiones tácticas sin anotarlas como artefacto.
+
+Techo realista tras aplicar P1 acumuladas: **9.0 – 9.3**.
 
 ---
 
-## Evidencia empírica del ciclo de desarrollo
+## Evidencia empírica del ciclo completo (S1 + S2)
 
-### Métricas de ejecución S1 (desde bootstrap hasta cierre)
+### Métricas de ejecución
 
 | Etapa | Agente | Tokens | Cooking |
 |---|---|---|---|
@@ -28,14 +40,24 @@ La nota puede subir a 8.7+ cuando el `code-reviewer` cierre el Gate DoD, si lo h
 | Análisis E01 | `feature-analyst` | 43.0k | 2m 42s |
 | Implementación E01 | `feature-developer` | 36.3k | 1m 25s |
 | Cierre S1 | `context-manager` | 35.3k | 3m 7s |
-| **Total** | **7 agentes, 11 invocaciones** | **~205k** | **~15 min** |
+| **(instalar Go + verificación toolchain local)** | — | — | humano |
+| Revisión E01 (1ª vuelta, detecta H1) | `code-reviewer` | 58.8k | 5m 31s |
+| Fix H1 + verificación completa | `feature-developer` | 36.2k | 2m 59s |
+| Re-revisión E01 (aprobación) | `code-reviewer` | **16.9k** | **1m 3s** |
+| Cierre S2 | `context-manager` | 43.0k | 3m 40s |
+| **Total ciclo completo** | **9 invocaciones** | **~360k** | **~28 min cooking** |
 
-**Proyecto inicial gasto-cli tras S1:**
+**Dato clave: re-review 71% más barato en tokens (16.9k vs 58.8k) y 81% más rápido (1m 3s vs 5m 31s).** El reviewer en la segunda vuelta solo verifica el diff contra H1, no relee todo. **Esto prueba que el modelo de iteración reviewer ↔ developer es económicamente viable.**
+
+**Estado del proyecto `gasto-cli` tras S2:**
+
 - 7 artefactos canónicos de documentación (634 líneas).
-- 26 archivos de código Go creados (productivos + tests).
-- `CONTEXTO.md` S2 a 43/80 líneas.
-- `DECISIONES.md` a 87/100 líneas con 3 ediciones in-place.
-- Bloqueante B01 declarado: verificación Go pendiente.
+- 26 archivos de código Go (domain + app + storage + cli + cmd + tests).
+- **Gate DoD cerrado:** 15/15 CA cubiertos, 100% cobertura domain, 8/8 paquetes verdes (unit + race + e2e).
+- `CONTEXTO.md` S3 a 42/80 líneas.
+- `DECISIONES.md` a 88/100 líneas (warning proactivo del context-manager: 12 líneas de margen antes del umbral).
+- 0 bloqueantes. 3 deudas 🟡 abiertas (H2 testify, H3 matriz, H4 paths).
+- E01 ✅ aprobada formalmente por `@code-reviewer`.
 
 ---
 
@@ -217,46 +239,104 @@ Combinado con la P2 de "plan detallado vs abstracto", hay espacio para **especif
 
 ---
 
-## Veredicto parcial
+## Hallazgos nuevos al completar el ciclo (post-parcial)
 
-El ciclo de desarrollo **funciona** pero revela **más fricción estructural que el bootstrap**. Los agentes siguen comportándose muy bien; los gaps son del framework.
+### Lo que el reviewer confirma — muy positivo
 
-Los tres gaps más serios:
-1. La matriz de permisos es incompleta para archivos auxiliares.
-2. El Gate DoD no cubre el caso común "escribí pero no pude ejecutar".
-3. El coste por feature (~115k tokens) es económicamente alto sin `memory-mcp` integrado.
+1. **El reviewer NO es redundante con el developer.** H1 (substring matching en `main.go:48-66`) lo atrapó cuando el developer lo había pasado por alto — a pesar de que el developer lo había registrado como deuda en su reporte inicial. Es un caso donde el developer "arreglaba la parte que gofmt le obligaba y dejaba la que no". Sin reviewer, deuda silenciosa en producción.
 
-Ninguno es bloqueante, todos son corregibles. La nota se mantiene en territorio de **8.3-8.5** a la espera del bloque final.
+2. **El reviewer mapeó DECISIONES §4 ↔ código literalmente.** Detectó que el texto del código contradecía la decisión textualmente. Es la revisión que un humano hace a ojo; ahora se ejecuta escalable.
+
+3. **Fixes concretos con línea, tipo y patrón.** El reviewer propuso literalmente: `var ErrIO = errors.New(...)`, envolver con `fmt.Errorf("...: %w", ErrIO)`, sustituir bloque `default` por `errors.Is(err, storage.ErrIO)`. Sin ambigüedad — el developer aplicó mecánicamente.
+
+4. **Iteración limpia en una vuelta.** El developer aplicó los 4 fixes, corrió toda la suite (gofmt + vet + build + test + test -race + test -tags e2e), todo verde, el reviewer re-aprobó en 1m 3s.
+
+5. **Re-review encontró H4 nuevo.** Al revisar el fix, el reviewer no solo verificó "¿arreglaste H1?" sino que hizo análisis arquitectural del fix y levantó H4 (riesgo futuro si paths fuera de storage usan el wrapping). Calidad real, no checkbox.
+
+### Validación cruzada de auditoría parcial
+
+- **H3 confirmado desde 3 fuentes independientes:** developer, reviewer y auditoría parcial detectaron el mismo gap (matriz de permisos no cubre `go.mod`/`go.sum`/`.gitkeep`). Convergencia = alta confianza en criticidad.
+
+### Observaciones sobre coste
+
+- **El ciclo completo S1+S2 consumió ~360k tokens.** Desglose:
+  - Bootstrap one-off: ~90k (≈25% del total).
+  - Ciclo recurrente por feature (analyst + developer + reviewer doble + cierre): ~265k.
+- **Estimación para 10 features:** ~2.7M tokens sin bootstrap, ≈$80-100 en precios Opus. No trivial pero tampoco catastrófico para uso profesional.
+- La oportunidad de optimización **clara y de alto retorno** sigue siendo `memory-mcp` integrado: el reviewer hoy relee `DECISIONES.md` entero cuando solo necesita §4 y §5; análogo para el resto de agentes.
+
+### Context-manager en su segundo cierre
+
+- **Numeración correcta esta vez:** S2 → S3 incrementa +1 (vs S0 → S2 saltándose S1 en el primer cierre). Pero el hueco histórico queda. El contrato sigue sin pinear.
+- **Warning proactivo sobre umbral de 100 líneas** repetido (88/100, 12 de margen). Consistente con S1.
+- **Edición in-place real en §3** (wrapping de `storage.ErrIO`). Retiró la deuda preexistente sobre substring matching. Cerró bloqueante B01. Protocolo cumplido.
 
 ---
 
-## Pendiente para cerrar v0.6
+## Veredicto final
 
-Cuando Mario instale Go y retome:
+El ciclo de desarrollo **funciona end-to-end con iteración económicamente viable**. Los agentes se comportan ejemplarmente; el gobierno del framework se respeta; los hallazgos que emergen son del framework (no del comportamiento agéntico) y todos son corregibles.
 
-1. `/nueva-sesion` — ver si resume bien el estado S2 y el bloqueante B01.
-2. Ejecutar verificación: `go mod tidy`, `gofmt -l .`, `go vet ./...`, `go test ./...`, `go test -race ./...`, `go test -tags e2e ./cmd/gasto/...`, coverage ≥90% en domain.
-3. `/revisar-codigo` con `@code-reviewer`:
-   - ¿Mapea los 15 criterios del analyst a tests concretos con archivo:línea?
-   - ¿Detecta las 3 tensiones ya registradas (matriz, heurística substring, go.sum)?
-   - ¿Detecta deuda adicional no vista aún?
-   - ¿Consume menos o más tokens que developer (36k)?
-   - ¿Clasifica 🔴🟡🔵 correctamente?
-4. Si hay 🔴, re-implementar con developer. Si no, cerrar sesión S2 con `/actualizar-contexto`.
+Tres aciertos estructurales confirmados con evidencia:
 
-Preguntas empíricas críticas:
+1. **El patrón reviewer → developer → reviewer escala económicamente.** Re-review cuesta 71% menos.
+2. **El reviewer aporta señal independiente crítica** — no es redundante con el developer.
+3. **El context-manager mantiene memoria compacta coherente** entre sesiones (42/80, 88/100 con warning).
 
-- ¿El Gate DoD se puede cerrar post-hoc cuando antes no se podía ejecutar, o el contrato se rompió ya?
-- ¿El `code-reviewer` aporta señal independiente útil o es redundante con lo que el developer ya reportó?
-- ¿El CONTEXTO S2 → S3 mantiene compacidad (<80 líneas) o empieza a inflarse?
+Tres gaps estructurales que frenan subir la nota:
+
+1. **Numeración de sesión sin pinear** (3 auditorías registrándolo ya: v0.4 teórica, v0.5 empírica, v0.6 confirmada).
+2. **Matriz de permisos incompleta para archivos auxiliares** (confirmado desde 3 fuentes).
+3. **Coste alto del ciclo sin `memory-mcp` integrado** (optimización pendiente con alto retorno).
+
+**Nota final: 8.7 / 10.** Techo realista tras aplicar P1 acumulados: 9.0-9.3.
 
 ---
 
-## Anexo: estado final tras v0.6 parcial
+## Próximos pasos (para el usuario, no para la auditoría)
 
-- 6 hallazgos P0/P1/P2 detectados en sesión S1 (ciclo completo bootstrap + 1 feature).
-- 0 bugs catastróficos.
-- Ciclo de desarrollo **completable** pero con fricciones que valen la pena atacar antes de v0.7.
-- Material suficiente para pinear 3-4 mejoras estructurales del framework (matriz expandida, Gate dos pasos, `memory-mcp` integrado, decisiones tácticas como artefacto).
+En sesión S3:
 
-Cuando se cierre el `@code-reviewer`, reescribiré el veredicto y la nota final.
+1. Escalar H3 a `@architect` → ampliar `MATRIZ_PERMISOS.md` con `go.mod`, `go.sum`, `.gitkeep`, y potencialmente un `PROJECT_MANIFEST_PATHS` en el pack go-service.
+2. `/analizar-funcionalidad` sobre E02 (gasto list + flags --fecha/--compartido + autocreación categoría + backup rotatorio).
+3. Repetir el ciclo E02. Será el **tercer test empírico** del framework y permitirá consolidar si los patrones observados en E01 (iteración barata, reviewer útil, developer con deuda táctica sin anotar) son estables o accidentales.
+
+## Recomendaciones estructurales para v0.7 (en el framework, no en gasto-cli)
+
+Priorizadas por impacto:
+
+### P0 — inmediato
+Ya cerrados en v0.5.
+
+### P1 — antes de más uso a gran escala
+Acumulados de v0.4 + v0.5 + v0.6:
+
+1. **Pinear numeración de sesión** en `memory-bank/SKILL.md` ("primera `CONTEXTO.md` tras bootstrap = S1, cada `/actualizar-contexto` incrementa +1").
+2. **Ampliar templates con `PROJECT_MANIFEST_PATHS`** y correspondientes filas en `MATRIZ_PERMISOS.md`.
+3. **Gate DoD de dos pasos:** pre-escritura (criterio + prueba + arquitectura) vs post-escritura (ejecutada).
+4. **Lint en `sync-agents.py`:** si `writes` no vacío, `tools` debe incluir `edit`.
+5. **Codificar el patrón "opciones A/B/C con trade-offs + recomendación"** en `memory-bank/SKILL.md` como convención explícita para agentes que piden decisión. **Confirmado en 5/5 agentes que decidieron algo** durante el ciclo (spec-analyst, architect, feature-analyst, feature-developer dos veces, code-reviewer). Es candidato claro.
+6. **"Decisión táctica durante implementación"** como artefacto de workflow: el developer la anota y el context-manager la promueve a DECISIONES al cierre.
+7. **Documentar en `CLAUDE_CODE.md`** la opción 2 del prompt de Claude Code ("allow all edits during this session") para desbloquear flujo tras primer prompt.
+
+### P2 — alto valor / alto retorno
+- **Integrar `memory-mcp` en `feature-analyst`, `feature-developer`, `code-reviewer`, `context-manager`.** Es la mejora con mayor retorno sobre consumo de tokens. Reducción estimada: 30-50%.
+- Añadir a `backend.instructions.md` de cada pack: *"archivos de manifest generados por toolchain (go.sum, package-lock.json, Cargo.lock, etc.) nunca se escriben a mano; anotar como pendiente de herramienta"*.
+
+### P3 — pendiente de más evidencia
+- Nivel de detalle del plan del analyst (tensión entre ceremonia y improvisación táctica).
+- Fusión de 3 agentes de bootstrap en 1 con modos (v0.4 P3 sin cerrar).
+- Template packs: evaluar valor real.
+
+---
+
+## Preguntas para la próxima auditoría (v0.7)
+
+Cuando se ejecute E02 (feature real, no tracer bullet):
+
+- ¿Los patrones observados en E01 (iteración barata, reviewer útil, ~115k tokens por feature) son **estables** entre features, o el tracer bullet tuvo sesgos?
+- ¿El developer sigue introduciendo decisiones tácticas no anotadas al vuelo?
+- ¿El context-manager sigue respetando edición in-place cuando las decisiones a añadir son más numerosas?
+- ¿`CONTEXTO.md` se mantiene compacto (<80 líneas) tras 5+ sesiones?
+- ¿Aparece algún patrón nuevo del LLM no previsto por el framework?
+- ¿Se cruza el umbral de 100 líneas de DECISIONES y cómo actúa el framework ante la migración a histórico?

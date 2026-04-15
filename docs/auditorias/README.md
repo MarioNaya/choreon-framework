@@ -17,9 +17,7 @@ No sustituye a la documentación: es input para futuras decisiones de diseño, r
 |---|---|---|---|
 | v0.4 (post-docs) | 2026-04-15 | 7.8 / 10 | [`AUDITORIA_V0.4.md`](AUDITORIA_V0.4.md) |
 | v0.5 (primer uso real — bootstrap) | 2026-04-15 | 8.5 / 10 | [`AUDITORIA_V0.5.md`](AUDITORIA_V0.5.md) |
-| v0.6 (ciclo de desarrollo — parcial) | 2026-04-15 | 8.3 / 10* | [`AUDITORIA_V0.6.md`](AUDITORIA_V0.6.md) |
-
-*Parcial: pendiente de `@code-reviewer` tras instalar Go y ejecutar la verificación toolchain.
+| v0.6 (ciclo de desarrollo — completa) | 2026-04-15 | 8.7 / 10 | [`AUDITORIA_V0.6.md`](AUDITORIA_V0.6.md) |
 
 ## Cuándo auditar
 
