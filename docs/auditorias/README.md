@@ -1,5 +1,7 @@
 # Auditorías
 
+> **Punto de reentrada rápido:** [`ESTADO_ACTUAL.md`](ESTADO_ACTUAL.md) — si retomas el trabajo tras un tiempo o en otro ordenador, empieza por ahí.
+
 Informes de auditoría del propio sistema agéntico. Cada entrada es una foto crítica del estado del boilerplate en un momento concreto, con puntos fuertes, defectos, sobreingeniería y líneas de mejora.
 
 No sustituye a la documentación: es input para futuras decisiones de diseño, registrado fuera de `docs/archivo/` porque sigue siendo útil como referencia activa.

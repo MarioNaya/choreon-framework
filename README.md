@@ -4,6 +4,8 @@ Un punto de partida agéntico para proyectos de desarrollo nuevos. Conviertes un
 
 Funciona con **Claude Code** y **GitHub Copilot** como herramientas de primera clase, y con Cursor / Aider / Codex vía `AGENTS.md`.
 
+> **¿Retomas el trabajo tras un tiempo o en otro ordenador?** Empieza por [`docs/auditorias/ESTADO_ACTUAL.md`](docs/auditorias/ESTADO_ACTUAL.md) — es el punto de reentrada autosuficiente.
+
 ---
 
 ## El problema que resuelve
