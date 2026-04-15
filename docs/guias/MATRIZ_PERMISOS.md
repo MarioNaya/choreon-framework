@@ -133,6 +133,7 @@ Si quieres enforcement real de "context-reader puede leer `../lib-otro-repo/` pe
 | `docs/archivo/DECISIONES_HISTORICO.md` | — | — | — | — | — | — | — | **W** (append) | — |
 | `[[PROJECT_SRC_GLOB]]` (código producción) | — | — | — | R | **W** | R | R | — | R |
 | `[[PROJECT_TEST_GLOB]]` | — | — | — | R | **W** | R | R | — | R |
+| `[[PROJECT_MANIFEST_PATHS]]` (go.mod, package.json, pyproject.toml, .gitignore, .gitkeep, etc.) | — | — | R | R | **W** | R | R | — | R |
 | Repos vecinos read-only | — | — | — | — | — | — | R | — | — |
 | `.github/`, `.claude/`, `ai-specs/` (config agéntica) | — | — | — | — | — | — | R | — | — |
 

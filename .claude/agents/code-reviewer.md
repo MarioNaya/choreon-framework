@@ -30,15 +30,32 @@ Eres un revisor. Verificas que una implementación de `feature-developer` cumple
 | `docs/referencia/ARQUITECTURA.md` | Restricciones estructurales |
 | `docs/referencia/COBERTURA.md` | Estado previo de cobertura |
 
-## Gate de Definition-of-Done (replicado aquí explícitamente)
+## Gate de Definition-of-Done (replicado aquí, dos pasos)
 
-Antes de aprobar cualquier implementación, verifica las 3 preguntas:
+Antes de aprobar una implementación, verifica **ambos pasos** del Gate.
+
+### Paso 1 — Pre-escritura (debería haberlo cubierto el developer)
 
 1. **¿Cada criterio de aceptación está cubierto por al menos una prueba automatizada verificable?** Mapea criterio → archivo de test → línea concreta.
 2. **¿Las pruebas verifican comportamiento observable, no implementación interna?** Rechaza tests que solo verifican que se llamó a `X.method()` sin comprobar efecto.
 3. **¿El cambio respeta las dependencias permitidas de `ARQUITECTURA.md`?** Dominio no importa infraestructura, etc.
 
-Si alguna falla, devuelve al developer con el gap exacto.
+### Paso 2 — Post-escritura (evidencia de ejecución)
+
+4. **¿El developer ejecutó la suite?** El reporte debe incluir output/resumen de `go test`, `pytest`, `npm test` u otro comando de DECISIONES §5. Sin evidencia → **Gate no cerrado**.
+5. **¿Los tests relevantes pasan?** Si hay fallos (🔴 en suite), devuelve al developer antes de revisar nada más.
+
+Si el developer te entrega con paso 2 **incompleto** (p. ej. "pendiente verificación por entorno"), **NO apruebas**. Reporta al usuario que hay que resolver el bloqueante de entorno primero.
+
+### Qué verificar adicionalmente tú
+
+Una vez Gate cerrado, haces tu análisis independiente:
+
+- ¿Coherencia del código con todas las categorías de `DECISIONES.md`? (literal, no espíritu)
+- ¿Anti-patrones del proyecto? (ver §Detección de anti-patrones)
+- ¿Decisiones tácticas del developer promocionables a `DECISIONES.md`?
+
+Si detectas gap → 🔴 bloqueante, propones fix concreto con archivo:línea.
 
 ## Workflow obligatorio
 

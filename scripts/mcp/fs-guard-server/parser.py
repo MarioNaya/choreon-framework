@@ -133,6 +133,7 @@ def _matches_pattern(rel_path: str, pattern: str, is_directory: bool) -> bool:
     - Exact path match (`docs/sesion/CONTEXTO.md`).
     - Glob match (`specs/spec-cerrada-*.md`).
     - Directory prefix (`specs/historico/` matches anything under it).
+    - CSV list (`go.mod, go.sum, .gitignore`): matches if rel_path matches any entry.
     - Skips unresolved placeholders `[[...]]`.
     - Abstract labels (e.g. 'Repos vecinos read-only') are never matched positively.
     """
@@ -142,6 +143,12 @@ def _matches_pattern(rel_path: str, pattern: str, is_directory: bool) -> bool:
         # Aceptar cualquier ruta bajo ese prefijo
         prefix = pattern.rstrip("/") + "/"
         return rel_path.startswith(prefix)
+    # Soporte para CSV: "go.mod, go.sum, .gitignore" → probar cada entrada
+    if "," in pattern:
+        entries = [p.strip() for p in pattern.split(",") if p.strip()]
+        return any(
+            fnmatch.fnmatchcase(rel_path, e) or rel_path == e for e in entries
+        )
     # fnmatch soporta *, ?, [seq]
     return fnmatch.fnmatchcase(rel_path, pattern) or rel_path == pattern
 

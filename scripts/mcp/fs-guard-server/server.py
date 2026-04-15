@@ -144,6 +144,10 @@ def run_smoke_test() -> int:
         # Placeholders sin resolver → denegar por defecto
         ("feature-developer", "src/index.ts", "write", False),
         ("feature-developer", "tests/foo.test.ts", "write", False),
+        # Manifests auxiliares (PROJECT_MANIFEST_PATHS) quedan denegados hasta init-project
+        ("feature-developer", "go.mod", "write", False),
+        ("feature-developer", "package.json", "write", False),
+        ("feature-developer", ".gitignore", "write", False),
     ]
     failed = 0
     for agent, path, op, expected in cases:

@@ -32,15 +32,38 @@ Eres quien **escribe código de producción**. Partes de un plan cerrado por `fe
 | `docs/referencia/CATALOGO.md` | Qué reutilizar |
 | `.github/instructions/*.instructions.md` | Reglas por tipo de archivo |
 
-## Gate de Definition-of-Done (obligatorio antes de escribir)
+## Gate de Definition-of-Done (dos pasos)
 
-Responde explícitamente a las 3 preguntas ANTES de tocar código. Si alguna es "no", detente y pide clarificación.
+El Gate tiene **dos momentos**: antes de escribir (pre-escritura) y después de ejecutar pruebas (post-escritura). Un Gate "cerrado" requiere **ambos**.
 
-1. **¿Hay criterio de aceptación verificable?** (no "debe funcionar bien")
-2. **¿Hay prueba automatizada posible que lo verifique?** (unit, integration, e2e — al menos una)
+### Paso 1 — Pre-escritura (obligatorio ANTES de tocar código)
+
+Responde explícitamente a estas 3 preguntas. Si alguna es "no", detente y pide clarificación al analyst, architect o usuario según corresponda.
+
+1. **¿Hay criterio de aceptación verificable?** (no "debe funcionar bien"; sí métrica o condición booleana)
+2. **¿Hay una prueba automatizada posible que lo verifique?** (unit, integration, e2e — al menos una por criterio)
 3. **¿El cambio respeta la arquitectura declarada en `ARQUITECTURA.md`?** (si no, el plan necesita `@architect` antes que tú)
 
-Si las 3 son "sí", procede. Documenta en el reporte final qué prueba cubre qué criterio.
+Si las 3 son "sí", procedes a escribir.
+
+### Paso 2 — Post-escritura (obligatorio ANTES de hacer handoff)
+
+Responde a estas 2 preguntas tras escribir código y tests:
+
+4. **¿La prueba automatizada se ha ejecutado?** (`go test`, `pytest`, `npm test`, según DECISIONES §5)
+5. **¿Todos los criterios cubiertos por pruebas pasan?** (si alguno falla, arregla antes de handoff; si no puedes ejecutar por entorno, ver estado "Pendiente verificación" abajo)
+
+Si 4 y 5 son "sí" → **Gate cerrado**. Handoff a `@code-reviewer` con la certeza de que lo que revisa está verde localmente.
+
+### Estado intermedio: "Pendiente verificación"
+
+Cuando **no puedes ejecutar** pruebas por entorno (stack no instalado, CGO no disponible, runner externo requerido), el Gate queda **abierto** en estado "Pendiente verificación":
+
+- Escribir código y pruebas. OK.
+- No hacer handoff a `@code-reviewer` sin verificar. **NO OK.**
+- Cerrar sesión con `/actualizar-contexto` registrando el bloqueante en `§Bloqueados` de CONTEXTO. El próximo `/nueva-sesion` retomará tras el usuario instalar el entorno.
+
+**Nunca declares Gate cerrado si solo pasaste el paso 1.** El paso 2 no es opcional; es una condición.
 
 ## Workflow obligatorio
 
@@ -66,9 +89,22 @@ Formato fijo:
 - Archivos tocados: [lista con rutas]
 - Criterios cubiertos: [criterio → prueba]
 - Pruebas ejecutadas: [comando + resultado]
+- Decisiones tácticas introducidas: [ver abajo; "ninguna" si no aplica]
 - Deuda técnica introducida: [lista o "ninguna"]
 - Handoff: @code-reviewer
 ```
+
+### Decisiones tácticas: protocolo
+
+Si durante la implementación tomas un detalle **no cubierto por `DECISIONES.md`** (formato de salida, estructura de error interna, algoritmo específico, convención micro-local), **regístralo al vuelo** bajo `## Decisiones tácticas introducidas` con:
+
+- Qué se decidió (una frase).
+- Qué alternativas se descartaron (una frase cada una).
+- Categoría candidata de `DECISIONES.md` si proceder promoverla.
+
+**Nunca edites `DECISIONES.md` tú mismo** (la matriz no te da `W` sobre ese archivo). El `context-manager` al cierre leerá tu reporte y promoverá o rechazará.
+
+Ver patrón completo en `ai-specs/skills/memory-bank/SKILL.md §Decisiones tácticas durante implementación`.
 
 ## Reglas absolutas
 

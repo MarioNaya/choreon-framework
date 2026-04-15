@@ -5,6 +5,7 @@
   "TEST_GLOB": "**/*_test.go",
   "PROJECT_SRC_GLOB": "**/*.go",
   "PROJECT_TEST_GLOB": "**/*_test.go",
+  "PROJECT_MANIFEST_PATHS": "go.mod, go.sum, .gitkeep, .gitignore, Makefile",
   "INSTALL_COMMAND": "go mod download",
   "TEST_COMMAND_UNIT": "go test ./... -short",
   "TEST_COMMAND_INTEGRATION": "go test -tags=integration ./...",

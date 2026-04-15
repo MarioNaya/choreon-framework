@@ -103,6 +103,27 @@ claude
 
 A partir de aquí el flujo es conversacional. Ver [`WALKTHROUGH.md`](WALKTHROUGH.md) para una narración completa.
 
+### Desbloquear el flujo tras el primer prompt de confirmación
+
+Claude Code, por defecto, pide confirmación interactiva la primera vez que un agente intenta escribir un archivo:
+
+```
+Do you want to create spec-cerrada-xyz.md?
+  1. Yes
+❯ 2. Yes, allow all edits during this session  (shift+tab)
+  3. No
+```
+
+**Recomendación práctica:** elige **opción 2 ("allow all edits during this session")** en el primer prompt del bootstrap. Razones:
+
+- El bootstrap escribe **7 artefactos** en las 4 fases; confirmar cada uno interrumpe el flow y fricciona la conversación.
+- Los agentes respetan `MATRIZ_PERMISOS.md` (con `fs-guard-mcp` activado, de forma ejecutable); no pueden escribir fuera de ámbito aunque les autorices "todo".
+- La sesión termina cuando cierras Claude Code; la autorización no persiste.
+
+Si prefieres máxima cautela, opción 1 en cada prompt — el bootstrap sigue funcionando, solo es más verboso. Lo que **no** recomiendo es quedarse a la mitad por fatiga de prompts y perder contexto.
+
+Observado empíricamente en la primera ejecución real del framework: los prompts repetidos fricciona hasta el punto de distraer del contenido real de las fases. Opción 2 al inicio es la elección pragmática.
+
 ---
 
 ## 4. Registrar los servidores MCP

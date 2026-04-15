@@ -42,3 +42,16 @@ src/
 
 - `requirements.txt` (o `pyproject.toml` si migras a poetry/uv) pinado a versiones concretas.
 - Nuevas dependencias requieren entrada en `DECISIONES §2 Stack`.
+
+## Archivos generados por toolchain — NUNCA a mano
+
+Estos archivos los genera el toolchain; **no los escribas manualmente**:
+
+- `poetry.lock` / `uv.lock` / `Pipfile.lock` → `poetry lock` / `uv lock` / `pipenv lock`.
+- `__pycache__/`, `*.pyc` → CPython al importar.
+- `.pytest_cache/`, `.coverage` → `pytest`.
+- Wheels y sdist en `dist/` → `python -m build`.
+
+Si necesitas crear/actualizar alguno, déjalo como deuda explícita en tu reporte de implementación (p. ej. "pendiente `uv lock` tras añadir dependencia X").
+
+Escribir archivos lock a mano es un **anti-patrón**: los hashes los calcula el package manager; copiarlos o inventarlos rompe integridad y CI.

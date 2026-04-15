@@ -75,6 +75,18 @@ Reglas:
 - **Sin referencias temporales** (no "nuevo el martes"). Solo la decisión vigente.
 - Si >100 líneas, migra lo menos relevante a `docs/archivo/DECISIONES_HISTORICO.md`.
 
+## Numeración de sesión (contrato)
+
+Invariantes estrictos:
+
+- **`S0`** = marcador de "plantilla inicial sin tocar"; NUNCA es una sesión real.
+- **Primera sesión tras `/bootstrap`** = `S1`. Al cerrar la Fase 4 del bootstrap, escribes directamente `sesión S1`.
+- **Cada `/actualizar-contexto` posterior incrementa +1**: `S1 → S2 → S3 → …`. Nunca saltos, nunca huecos.
+- Si al leer `CONTEXTO.md` detectas `S0` y estás cerrando sesión, **aplica `S1`** (estamos cerrando la primera sesión real tras bootstrap).
+- Si detectas inconsistencia (p. ej. `S2` sin `S1` previa en el histórico, o número menor al esperado), **reporta el aviso al usuario** y ofrece reconciliar antes de continuar. No lo corrijas silenciosamente.
+
+Los backups `.bak.md` capturan el estado **previo** (la sesión que se va a sobrescribir). Si cierras `S3 → S4`, los `.bak` contienen `S3`.
+
 ## Responsabilidad 3 — Backups (propuesta 2)
 
 **Antes de cualquier modificación**, crea/actualiza ambos backups:
@@ -94,7 +106,7 @@ Esto permite:
 4. Identifica **qué es deuda nueva**, **qué bloqueos se resolvieron**, **qué convenciones cambian**.
 5. Crea `CONTEXTO.bak.md` copiando CONTEXTO.md actual.
 6. Crea `DECISIONES.bak.md` copiando DECISIONES.md actual.
-7. Reescribe `CONTEXTO.md` con la estructura de 6 secciones, incrementando `SN` si es nueva sesión.
+7. Reescribe `CONTEXTO.md` con la estructura de 6 secciones, **incrementando la sesión en +1 estrictamente** (ver §Numeración abajo).
 8. Edita `DECISIONES.md` in-place: modifica bullets existentes o añade nuevos en la categoría adecuada.
 9. Verifica que `CONTEXTO.md` ≤ 80 líneas.
 10. Verifica que `DECISIONES.md` mantiene las 8 categorías y sin duplicados.

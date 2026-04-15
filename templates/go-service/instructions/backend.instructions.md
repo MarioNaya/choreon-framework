@@ -51,3 +51,15 @@ Go se organiza por **paquete**, no por capa horizontal. Estructura recomendada:
 - `go.mod` con `require` pinado. `go.sum` versionado.
 - Nuevas deps → `DECISIONES §2 Stack`.
 - Prefiere librería estándar cuando sea razonable.
+
+## Archivos generados por toolchain — NUNCA a mano
+
+Estos archivos los genera Go; **no los escribas manualmente**:
+
+- `go.sum` → `go mod tidy` (hashes verificados con el proxy).
+- Archivos compilados (`*.o`, binarios en `bin/`) → `go build`.
+- `coverage.out` → `go test -coverprofile`.
+
+Si necesitas crear/actualizar alguno, **déjalo como deuda explícita** ("pendiente `go mod tidy` tras instalar dependencia X") en tu reporte de implementación. El reviewer verificará con el toolchain real.
+
+Escribir `go.sum` a mano es un **anti-patrón** detectado en auditoría: los hashes inventados o copiados no coinciden con lo que el proxy devuelve y rompe el build en CI.

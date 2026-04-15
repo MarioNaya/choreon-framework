@@ -41,3 +41,16 @@ src/
 
 - Nuevas dependencias requieren entrada en `DECISIONES.md §2 Stack` (handoff `@architect`).
 - Preferir librerías con tipos propios; si usa `@types/*`, documentar versión.
+
+## Archivos generados por toolchain — NUNCA a mano
+
+Estos archivos los genera el package manager; **no los escribas manualmente**:
+
+- `pnpm-lock.yaml` / `package-lock.json` → `pnpm install` / `npm install`.
+- `node_modules/` → `pnpm install`.
+- Bundles de build (`dist/`, `build/`) → `pnpm build`.
+- `*.tsbuildinfo` → `tsc`.
+
+Si necesitas crear/actualizar alguno, déjalo como deuda explícita ("pendiente `pnpm install` tras añadir dependencia X") en tu reporte de implementación.
+
+Escribir `pnpm-lock.yaml` a mano es un **anti-patrón**: los hashes deben generarse por el package manager; copiar/inventar rompe integridad y CI.

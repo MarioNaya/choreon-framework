@@ -5,6 +5,7 @@
   "TEST_GLOB": "tests/**/*.py",
   "PROJECT_SRC_GLOB": "src/**/*.py",
   "PROJECT_TEST_GLOB": "tests/**/*.py",
+  "PROJECT_MANIFEST_PATHS": "pyproject.toml, requirements.txt, requirements-dev.txt, .gitkeep, .gitignore, Makefile",
   "INSTALL_COMMAND": "pip install -r requirements.txt",
   "TEST_COMMAND_UNIT": "pytest tests/unit",
   "TEST_COMMAND_INTEGRATION": "pytest tests/integration",

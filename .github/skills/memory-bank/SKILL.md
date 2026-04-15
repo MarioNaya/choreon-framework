@@ -27,6 +27,18 @@ description: Protocolos de memoria del sistema. Jerarquía de documentos (establ
 3. Reescribe CONTEXTO completo; edita DECISIONES in-place.
 4. Verificar ≤80 líneas en CONTEXTO y 8 categorías en DECISIONES.
 
+## Numeración de sesión (contrato pineado)
+
+Reglas invariables:
+
+1. La **plantilla inicial** de `CONTEXTO.md` en el boilerplate sin tocar lleva `S0 — plantilla inicial`. **`S0` no es una sesión real; es el marcador del estado sin proyecto**.
+2. La **primera sesión real** tras `/bootstrap` es **`S1`**. El `context-manager` de la fase 4 del bootstrap escribe directamente `CONTEXTO.md` con `S1`, nunca `S0` ni salto.
+3. Cada ejecución posterior de `/actualizar-contexto` **incrementa en +1 estrictamente**: `S1 → S2 → S3 → …`. Sin saltos. Sin huecos.
+4. Los backups `CONTEXTO.bak.md` y `DECISIONES.bak.md` capturan el estado previo **de la sesión que se va a sobrescribir** (p. ej. al cerrar S2 para abrir S3, los `.bak` contienen S2).
+5. Si el `context-manager` detecta inconsistencia (hueco histórico, número fuera de orden, o `S0` al intentar cerrar una sesión real), **debe avisar en el reporte de cierre** y ofrecer al usuario reconciliar la numeración.
+
+Esta regla aplica a todos los agentes que lean o escriban CONTEXTO, no solo al `context-manager`.
+
 ## Fuentes de verdad canónicas
 
 | Tipo de regla | Fuente canónica | Dónde se replica (resúmenes) |
@@ -61,6 +73,63 @@ Regla: **una definición, múltiples punteros**. Si ves información duplicada l
 | Un test rojo por cambio legítimo en el contrato | `/adaptar-componente` + `@feature-developer` |
 | Cobertura insuficiente de un criterio | `/analizar-funcionalidad` + `@feature-analyst` |
 | Refactor de pruebas (sin cambiar criterios) | `/implementar-feature` con plan explícito del refactor |
+
+## Patrón de decisión al usuario (opciones A/B/C con trade-offs)
+
+Cuando un agente necesita que el usuario decida entre alternativas no triviales, **el formato canónico** es:
+
+```
+[Contexto mínimo: qué hay que decidir y por qué.]
+
+┌───┬────────────────────┬─────────────┬──────────────────┐
+│ # │      Acción        │    Coste    │   Consecuencia   │
+├───┼────────────────────┼─────────────┼──────────────────┤
+│ A │ [acción breve]     │ [tiempo/    │ [qué se gana/    │
+│   │                    │  líneas]    │  qué se pierde]  │
+├───┼────────────────────┼─────────────┼──────────────────┤
+│ B │ [alternativa]      │ …           │ …                │
+├───┼────────────────────┼─────────────┼──────────────────┤
+│ C │ [alternativa]      │ …           │ …                │
+└───┴────────────────────┴─────────────┴──────────────────┘
+
+Recomendación: [A/B/C con una frase de por qué].
+
+¿Cuál aplico?
+```
+
+Invariantes:
+
+- **2 a 4 opciones.** Menos = falsa dicotomía; más = parálisis.
+- **Cada opción trae coste y consecuencia visibles.** No solo etiqueta.
+- **Recomendación explícita** con justificación de una frase. No "depende".
+- **Ejemplo de respuesta** cuando proceda (p. ej. `"ok, A"` o `"A + B"`).
+
+Agentes donde aplica: cualquiera que cierre una fase pidiendo confirmación (`spec-analyst`, `domain-modeler`, `architect`, `feature-analyst`, `feature-developer` ante obstáculos, `code-reviewer` con recomendaciones).
+
+Rationale: patrón emergente en 5/5 agentes durante el primer uso empírico (ver `docs/auditorias/AUDITORIA_V0.6.md`). Codificarlo garantiza consistencia.
+
+## Decisiones tácticas durante implementación
+
+Cuando `feature-developer` (u otro agente escritor) tiene que decidir un **detalle táctico no cubierto por `DECISIONES.md`**:
+
+1. **Registrar la decisión al vuelo** en un bloque del reporte de implementación bajo `## Decisiones tácticas introducidas`, con: qué se decidió, qué alternativas se descartaron, categoría tentativa de DECISIONES.
+2. **No** introducir la decisión en `DECISIONES.md` directamente (el developer no tiene `W` sobre ese archivo).
+3. Al cerrar sesión, `context-manager` lee el reporte del developer y **promueve** esas decisiones tácticas a `DECISIONES.md` en la categoría correcta, o las **marca como deuda** si el usuario no las aprueba.
+
+Ejemplo:
+
+```
+## Decisiones tácticas introducidas
+
+- Exit codes: mapeo 0/1/2 en main.go vía switch explícito sobre sentinelas
+  tipadas + errors.Is. Descartado: substring matching del mensaje (frágil).
+  Candidata a DECISIONES §4 Convenciones.
+- Formato stdout de add: `✓ 12.50€ comida "descripción"`. Minimalista;
+  descartado incluir ID porque no aporta al usuario en add.
+  Candidata a DECISIONES §4 Convenciones (formato CLI) o deuda.
+```
+
+Rationale: observado en v0.6 que el developer improvisa detalles tácticos y el reviewer los atrapa tarde. Registrar al vuelo reduce latencia del feedback.
 
 ## Anti-patrones de memoria
 

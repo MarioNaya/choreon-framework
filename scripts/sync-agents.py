@@ -121,6 +121,29 @@ def load_agent(path: Path) -> AgentSpec:
     )
 
 
+def validate_agent_coherence(spec: AgentSpec, source_path: Path) -> list[str]:
+    """Detect incoherencias entre writes y tools del agente canonical.
+
+    Reglas:
+    - Si writes no está vacío → tools debe incluir 'edit' (mapeado a Write+Edit en Claude Code).
+    - Si writes está vacío → no hay restricción sobre tools (un agente puede leer-solo).
+
+    Returns lista de mensajes de error; vacía si todo coherente.
+    """
+    errors: list[str] = []
+    has_writes = bool(spec.writes)
+    tools_lower = [t.strip().lower() for t in spec.tools]
+    has_edit = "edit" in tools_lower
+
+    if has_writes and not has_edit:
+        writes_fmt = ", ".join(spec.writes)
+        errors.append(
+            f"{source_path.name}: declara writes ({writes_fmt}) pero 'edit' no está en tools "
+            f"{spec.tools}. Añade 'edit' a tools, o retira writes si el agente no escribe."
+        )
+    return errors
+
+
 def map_tools_to_claude(canonical_tools: list[str]) -> str:
     """Convert canonical tool names to Claude Code's comma-separated string."""
     seen: list[str] = []
@@ -173,10 +196,26 @@ def sync_agents():
     (CLAUDE_DIR / "agents").mkdir(parents=True, exist_ok=True)
     (GH_DIR / "agents").mkdir(parents=True, exist_ok=True)
     written = []
+
+    # Primer paso: validar coherencia de todos los agentes antes de escribir nada.
+    # Fail fast: si hay inconsistencias, aborta sin generar destinos a medias.
+    all_errors: list[str] = []
+    specs_cache: list[tuple[Path, str, AgentSpec]] = []
     for src in sorted((HUB / "agents").glob("*.md")):
         original = src.read_text(encoding="utf-8")
         spec = load_agent(src)
+        specs_cache.append((src, original, spec))
+        all_errors.extend(validate_agent_coherence(spec, src))
 
+    if all_errors:
+        print("✗ Lint falló en ai-specs/agents/:", file=sys.stderr)
+        for e in all_errors:
+            print(f"  {e}", file=sys.stderr)
+        print("\nNo se ha generado nada. Arregla las inconsistencias y reintenta.", file=sys.stderr)
+        sys.exit(3)
+
+    # Segundo paso: generar destinos.
+    for src, original, spec in specs_cache:
         claude_dest = CLAUDE_DIR / "agents" / src.name
         claude_dest.write_text(render_claude_agent(spec), encoding="utf-8")
         written.append(str(claude_dest.relative_to(ROOT)))
