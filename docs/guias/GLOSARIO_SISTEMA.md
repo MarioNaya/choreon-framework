@@ -154,8 +154,6 @@ Metodología por la que toda feature arranca con una **spec cerrada**: un docume
 
 El boilerplate aplica SDD en la fase de [bootstrap](#bootstrap); a nivel de feature individual usa un flujo paralelo más ligero (`/analizar-funcionalidad` → `/implementar-feature`).
 
-Inspirado en `C:\Users\mario\Desktop\sdd\manual-SDD`.
-
 ## Skill
 
 <a id="skill"></a>
